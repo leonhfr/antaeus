@@ -33,6 +33,7 @@ internal fun setupInitialData(dal: AntaeusDal) {
 // This is the mocked instance of the payment provider
 internal fun getPaymentProvider(): PaymentProvider {
     return object : PaymentProvider {
+//        TODO: Add random error throw to check behaviour in real time
         override fun charge(invoice: Invoice): Boolean {
                 return Random.nextBoolean()
         }

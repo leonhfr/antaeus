@@ -41,6 +41,20 @@ Update: `gradle test` does the trick and produces a html
 ## Challenge notes
 
 - first step, get only pending invoices + add end point and unit tests
+- then, handle simply the pending invoices
+
+## To-dos
+
+- TODO: Unit tests
+- TODO: CI w/ Github actions
+- TODO: Kafka docker
+- TODO: Kafka job streaming
+- TODO: Update README
+- TODO: kjob (cron library) instead of coroutine
+
+Future steps:
+- reporting (email)
+- dead letter queue
 
 ## Random Kotlin notes
 
@@ -60,6 +74,16 @@ Update: `gradle test` does the trick and produces a html
 - https://kotlinlang.org/docs/basic-types.html
 - https://kotlinlang.org/docs/data-classes.html
 - https://kotlinlang.org/docs/equality.html
+- https://kotlinlang.org/docs/null-safety.html incl Elvis operator `?:`
+- https://kotlinlang.org/docs/exceptions.html
+- https://kotlinlang.org/docs/control-flow.html#when-expression `when`
+
+### Libraries
+
+- Exposed (SQL): https://github.com/JetBrains/Exposed
+- Logging: https://github.com/MicroUtils/kotlin-logging
+- Javelin: https://javalin.io/documentation
+- Coroutines: https://github.com/Kotlin/kotlinx.coroutines
 
 ### Others
 

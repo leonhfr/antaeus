@@ -4,5 +4,6 @@ data class Invoice(
     val id: Int,
     val customerId: Int,
     val amount: Money,
-    val status: InvoiceStatus
+//    TODO: check var here, immutable is better?
+    var status: InvoiceStatus
 )
