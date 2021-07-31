@@ -26,26 +26,26 @@ class BillingService(
         val logTag = "[chargeInvoice]"
         try {
             val paid = paymentProvider.charge(invoice)
-            invoice.status = if (paid) {
+            val status = if (paid) {
                 logger.info("$logTag Charge successful (invoice ${invoice.id})")
                 InvoiceStatus.PAID
             } else {
                 logger.info("$logTag Charge failed (invoice ${invoice.id})")
                 InvoiceStatus.FAILED_PAYMENT_METHOD
             }
+            return invoice.copy(status=status)
         } catch (e: CurrencyMismatchException) {
             logger.info("$logTag Currency mismatch exception (invoice ${invoice.id})")
-            invoice.status = InvoiceStatus.FAILED_CURRENCY_MISMATCH
+            return invoice.copy(status = InvoiceStatus.FAILED_CURRENCY_MISMATCH)
         } catch (e: CustomerNotFoundException) {
             logger.info("$logTag Customer not found exception (invoice ${invoice.id})")
-            invoice.status = InvoiceStatus.FAILED_CUSTOMER_NOT_FOUND
+            return invoice.copy(status = InvoiceStatus.FAILED_CUSTOMER_NOT_FOUND)
         } catch (e: NetworkException) {
             logger.info("$logTag Network exception (invoice ${invoice.id})")
-            invoice.status = InvoiceStatus.FAILED_NETWORK
+            return invoice.copy(status = InvoiceStatus.FAILED_NETWORK)
         } catch (e: Exception) {
             logger.info("$logTag Unknown exception (invoice ${invoice.id})", e)
-            invoice.status = InvoiceStatus.FAILED_UNKNOWN
+            return invoice.copy(status = InvoiceStatus.FAILED_UNKNOWN)
         }
-        return invoice
     }
 }
