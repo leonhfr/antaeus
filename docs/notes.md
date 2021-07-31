@@ -45,7 +45,6 @@ Update: `gradle test` does the trick and produces a html
 
 ## To-dos
 
-- TODO: Unit tests
 - TODO: Kafka docker
 - TODO: Kafka job streaming
 - TODO: Update README
@@ -83,6 +82,7 @@ Future steps:
 - Logging: https://github.com/MicroUtils/kotlin-logging
 - Javelin: https://javalin.io/documentation
 - Coroutines: https://github.com/Kotlin/kotlinx.coroutines
+- Mocking: https://mockk.io/
 
 ### Others
 
