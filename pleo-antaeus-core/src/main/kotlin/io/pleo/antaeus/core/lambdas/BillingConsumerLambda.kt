@@ -1,20 +1,21 @@
-package io.pleo.antaeus.core.services
+package io.pleo.antaeus.core.lambdas
 
 import io.pleo.antaeus.core.exceptions.CurrencyMismatchException
 import io.pleo.antaeus.core.exceptions.CustomerNotFoundException
 import io.pleo.antaeus.core.exceptions.NetworkException
 import io.pleo.antaeus.core.external.PaymentProvider
+import io.pleo.antaeus.core.services.InvoiceService
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import mu.KotlinLogging
 
-class BillingService(
+class BillingConsumerLambda(
     private val paymentProvider: PaymentProvider,
     private val invoiceService: InvoiceService
 ) {
     private val logger = KotlinLogging.logger {}
 
-    fun processInvoice(id: Int): Invoice {
+    fun handler(id: Int): Invoice {
         val invoice = invoiceService.fetch(id)
         val result = this.chargeInvoice(invoice).also { invoiceService.update(invoice.id, it.status) }
         return when (result.status) {

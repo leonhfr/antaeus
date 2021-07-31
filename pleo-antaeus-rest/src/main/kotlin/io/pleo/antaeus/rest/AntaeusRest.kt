@@ -7,8 +7,8 @@ package io.pleo.antaeus.rest
 import io.javalin.Javalin
 import io.javalin.apibuilder.ApiBuilder.get
 import io.javalin.apibuilder.ApiBuilder.path
-import io.javalin.apibuilder.ApiBuilder.post
 import io.pleo.antaeus.core.exceptions.EntityNotFoundException
+import io.pleo.antaeus.core.lambdas.BillingProducerLambda
 import io.pleo.antaeus.core.services.CustomerService
 import io.pleo.antaeus.core.services.InvoiceService
 import io.pleo.antaeus.models.InvoiceStatus
@@ -19,7 +19,8 @@ private val thisFile: () -> Unit = {}
 
 class AntaeusRest(
     private val invoiceService: InvoiceService,
-    private val customerService: CustomerService
+    private val customerService: CustomerService,
+    private val billingProducerLambda: BillingProducerLambda
 ) : Runnable {
 
     override fun run() {
@@ -57,6 +58,14 @@ class AntaeusRest(
 
                 // V1
                 path("v1") {
+                    path("billing") {
+                        // URL: /rest/v1/invoices
+                        get {
+                            // Used to trigger the billing process for testing
+                            it.json(billingProducerLambda.handler())
+                        }
+                    }
+
                     path("invoices") {
                         // URL: /rest/v1/invoices
                         get {
