@@ -76,7 +76,7 @@ Future steps:
 - https://kotlinlang.org/docs/equality.html
 - https://kotlinlang.org/docs/null-safety.html incl Elvis operator `?:`
 - https://kotlinlang.org/docs/exceptions.html
-- https://kotlinlang.org/docs/control-flow.html#when-expression `when`
+- https://kotlinlang.org/docs/control-flow.html#when-expression `when`, a bit like Rust's `match`
 
 ### Libraries
 

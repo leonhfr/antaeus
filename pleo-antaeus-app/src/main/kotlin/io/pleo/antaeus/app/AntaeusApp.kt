@@ -86,7 +86,7 @@ fun main() {
     runBlocking {
         launch {
             while(true) {
-                if (DateTime.now().dayOfMonth == 30) {
+                if (DateTime.now().dayOfMonth == 31) {
                     logger.info { "Scheduled task, charge pending invoices" }
                     invoiceService.fetchAll(InvoiceStatus.PENDING).forEach {
                         billingService.processInvoice(it)
