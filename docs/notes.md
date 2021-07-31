@@ -47,7 +47,6 @@ Update: `gradle test` does the trick and produces a html
 
 - TODO: Kafka docker
 - TODO: Kafka job streaming
-- TODO: Update README
 
 Future steps:
 - reporting (email)
