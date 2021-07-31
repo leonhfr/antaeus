@@ -46,7 +46,6 @@ Update: `gradle test` does the trick and produces a html
 ## To-dos
 
 - TODO: Unit tests
-- TODO: CI w/ Github actions
 - TODO: Kafka docker
 - TODO: Kafka job streaming
 - TODO: Update README
@@ -89,3 +88,4 @@ Future steps:
 
 - https://www.petrikainulainen.net/programming/testing/running-kotlin-tests-with-gradle/
 - https://stackoverflow.com/questions/36262305/difference-between-list-and-array-types-in-kotlin
+- for CI: https://github.com/marketplace/actions/gradle-command
