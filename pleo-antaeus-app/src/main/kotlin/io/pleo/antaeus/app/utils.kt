@@ -36,10 +36,10 @@ internal fun setupInitialData(dal: AntaeusDal) {
 internal fun getPaymentProvider(): PaymentProvider {
     return object : PaymentProvider {
         override fun charge(invoice: Invoice): Boolean {
-            when ((0..10).random()) {
-                0 -> throw CurrencyMismatchException(invoiceId = invoice.id, customerId = invoice.customerId)
-                1 -> throw CustomerNotFoundException(id = invoice.customerId)
-                2 -> throw NetworkException()
+            when ((1..10).random()) {
+                1 -> throw CurrencyMismatchException(invoiceId = invoice.id, customerId = invoice.customerId)
+                2 -> throw CustomerNotFoundException(id = invoice.customerId)
+                3 -> throw NetworkException()
                 else -> return Random.nextBoolean()
             }
         }

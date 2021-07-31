@@ -22,7 +22,7 @@ class BillingService(
         invoiceService.update(invoice.id, result.status)
     }
 
-    private fun chargeInvoice(invoice: Invoice): Invoice {
+    fun chargeInvoice(invoice: Invoice): Invoice {
         val logTag = "[chargeInvoice]"
         try {
             val paid = paymentProvider.charge(invoice)

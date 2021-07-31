@@ -25,14 +25,22 @@ class InvoiceServiceTest {
         every { fetchInvoices(InvoiceStatus.PENDING) } returns listOf(
             invoice1
         )
+        every { updateInvoice(404, InvoiceStatus.PAID) } returns null
     }
 
     private val invoiceService = InvoiceService(dal = dal)
 
     @Test
-    fun `will throw if invoice is not found`() {
+    fun `fetch will throw if invoice is not found`() {
         assertThrows<InvoiceNotFoundException> {
             invoiceService.fetch(404)
+        }
+    }
+
+    @Test
+    fun `update will throw if invoice is not found`() {
+        assertThrows<InvoiceNotFoundException> {
+            invoiceService.update(404, InvoiceStatus.PAID)
         }
     }
 
