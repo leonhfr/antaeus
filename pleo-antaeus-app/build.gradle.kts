@@ -12,6 +12,7 @@ application {
 }
 
 repositories {
+    jcenter()
     mavenCentral()
 }
 
@@ -23,4 +24,9 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7")
+
+    // kjob
+    implementation("it.justwrote:kjob-core:0.2.0")
+    implementation("it.justwrote:kjob-kron:0.2.0")
+    implementation("it.justwrote:kjob-inmem:0.2.0" )
 }

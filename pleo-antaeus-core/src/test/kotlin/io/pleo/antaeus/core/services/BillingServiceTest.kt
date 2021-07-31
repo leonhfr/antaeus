@@ -13,15 +13,16 @@ import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.Money
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.math.BigDecimal
 
 class BillingServiceTest {
-    private fun getInvoice(id: Int): Invoice {
+    private fun getInvoice(id: Int, status: InvoiceStatus = InvoiceStatus.PENDING): Invoice {
         return Invoice(
             id = id,
             customerId = 1,
             amount = Money(BigDecimal(100), Currency.EUR),
-            status = InvoiceStatus.PENDING
+            status = status
         )
     }
 
@@ -35,6 +36,9 @@ class BillingServiceTest {
     }
 
     private val invoiceService = mockk<InvoiceService> {
+        every { fetch(1) } returns getInvoice(1)
+        every { fetch(5) } returns getInvoice(5)
+        every { update(1, InvoiceStatus.FAILED_NETWORK) } returns getInvoice(1, InvoiceStatus.FAILED_NETWORK)
         every { update(5, InvoiceStatus.PAID) } returns getInvoice(5)
     }
 
@@ -42,10 +46,16 @@ class BillingServiceTest {
 
     @Test
     fun `processInvoice should update the invoice`() {
-        val input = getInvoice(5)
-        billingService.processInvoice(input)
-        verify(exactly = 1) { paymentProvider.charge(input) }
+        billingService.processInvoice(5)
+        verify(exactly = 1) { paymentProvider.charge(getInvoice(5)) }
         verify(exactly = 1) { invoiceService.update(5, InvoiceStatus.PAID) }
+    }
+
+    @Test
+    fun `processInvoice should throw on select errors`() {
+        assertThrows<Exception> {
+            billingService.processInvoice(1)
+        }
     }
 
     @Test

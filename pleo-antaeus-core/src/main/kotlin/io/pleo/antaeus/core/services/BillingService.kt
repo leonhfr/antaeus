@@ -14,12 +14,16 @@ class BillingService(
 ) {
     private val logger = KotlinLogging.logger {}
 
-    fun processInvoice(invoice: Invoice) {
-//        val logTag = "[processInvoice]"
-        val result = this.chargeInvoice(invoice)
-//        TODO: Exponential backoff
-//        TODO: Queue system
-        invoiceService.update(invoice.id, result.status)
+    fun processInvoice(id: Int): Invoice {
+        val invoice = invoiceService.fetch(id)
+        val result = this.chargeInvoice(invoice).also { invoiceService.update(invoice.id, it.status) }
+        return when (result.status) {
+            // Throwing to retry job
+            InvoiceStatus.FAILED_NETWORK, InvoiceStatus.FAILED_UNKNOWN -> {
+                throw Exception("Failing to retry invoice $id")
+            }
+            else -> result
+        }
     }
 
     fun chargeInvoice(invoice: Invoice): Invoice {
@@ -33,7 +37,7 @@ class BillingService(
                 logger.info("$logTag Charge failed (invoice ${invoice.id})")
                 InvoiceStatus.FAILED_PAYMENT_METHOD
             }
-            return invoice.copy(status=status)
+            return invoice.copy(status = status)
         } catch (e: CurrencyMismatchException) {
             logger.info("$logTag Currency mismatch exception (invoice ${invoice.id})")
             return invoice.copy(status = InvoiceStatus.FAILED_CURRENCY_MISMATCH)

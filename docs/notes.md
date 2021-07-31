@@ -48,7 +48,6 @@ Update: `gradle test` does the trick and produces a html
 - TODO: Kafka docker
 - TODO: Kafka job streaming
 - TODO: Update README
-- TODO: kjob (cron library) instead of coroutine
 
 Future steps:
 - reporting (email)
@@ -83,6 +82,7 @@ Future steps:
 - Javelin: https://javalin.io/documentation
 - Coroutines: https://github.com/Kotlin/kotlinx.coroutines
 - Mocking: https://mockk.io/
+- kjob: https://github.com/justwrote/kjob/
 
 ### Others
 

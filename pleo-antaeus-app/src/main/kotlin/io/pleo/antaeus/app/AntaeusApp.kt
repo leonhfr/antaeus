@@ -16,9 +16,13 @@ import io.pleo.antaeus.data.CustomerTable
 import io.pleo.antaeus.data.InvoiceTable
 import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.rest.AntaeusRest
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import it.justwrote.kjob.KronJob
+import it.justwrote.kjob.kjob
+import it.justwrote.kjob.InMem
+import it.justwrote.kjob.Job
+import it.justwrote.kjob.job.JobExecutionType
+import it.justwrote.kjob.kron.Kron
+import it.justwrote.kjob.kron.KronModule
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -26,16 +30,21 @@ import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.joda.time.DateTime
 import setupInitialData
 import java.io.File
 import java.sql.Connection
-import kotlin.time.ExperimentalTime
-import kotlin.time.days
 
-private val logger = KotlinLogging.logger {}
+private val kotlinLogger = KotlinLogging.logger {}
 
-@OptIn(ExperimentalTime::class)
+// Cron job expressions:
+// - every 1st of the month at 3am: 0 0 3 ? 1 * *
+// - every minute (testing): 0 */10 * ? * * *
+object FirstOfMonth : KronJob("charge-invoices", "0 */1 * ? * * *")
+
+object ProcessInvoiceJob : Job("process-invoice") {
+    val id = integer("id")
+}
+
 fun main() {
     // The tables to create in the database.
     val tables = arrayOf(InvoiceTable, CustomerTable)
@@ -82,19 +91,29 @@ fun main() {
         customerService = customerService
     ).run()
 
-//    Coroutine
-    runBlocking {
-        launch {
-            while(true) {
-                if (DateTime.now().dayOfMonth == 31) {
-                    logger.info { "Scheduled task, charge pending invoices" }
-                    invoiceService.fetchAll(InvoiceStatus.PENDING).forEach {
-                        billingService.processInvoice(it)
-                    }
-                } else {
-                    logger.info { "No scheduled task today." }
+    // kjob
+    val kjob = kjob(InMem) {
+        nonBlockingMaxJobs = 3
+        blockingMaxJobs = 3
+        extension(KronModule)
+    }.start()
+
+    kjob.register(ProcessInvoiceJob) {
+        executionType = JobExecutionType.NON_BLOCKING
+        execute {
+            billingService.processInvoice(props[it.id])
+        }
+    }
+
+    kjob(Kron).kron(FirstOfMonth) {
+        maxRetries = 3
+        execute {
+            kotlinLogger.info { "Scheduled task, charge pending invoices" }
+            invoiceService.fetchAll(InvoiceStatus.PENDING).forEach {
+                val id = it.id
+                kjob.schedule(ProcessInvoiceJob) {
+                    props[it.id] = id
                 }
-                delay(1.days)
             }
         }
     }
