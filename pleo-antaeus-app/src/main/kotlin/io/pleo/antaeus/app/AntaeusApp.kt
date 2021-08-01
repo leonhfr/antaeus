@@ -22,11 +22,6 @@ import io.pleo.antaeus.data.AntaeusDal
 import io.pleo.antaeus.data.CustomerTable
 import io.pleo.antaeus.data.InvoiceTable
 import io.pleo.antaeus.rest.AntaeusRest
-import it.justwrote.kjob.KronJob
-import it.justwrote.kjob.kjob
-import it.justwrote.kjob.InMem
-import it.justwrote.kjob.kron.Kron
-import it.justwrote.kjob.kron.KronModule
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -39,12 +34,7 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 import java.sql.Connection
 
-private val kotlinLogger = KotlinLogging.logger {}
-
-// Cron job expressions:
-// - every 1st of the month at 3am: 0 0 3 ? 1 * *
-// - every minute (testing): 0 */10 * ? * * *
-object FirstOfMonth : KronJob("charge-invoices", "0 */1 * ? * * *")
+private val logger = KotlinLogging.logger {}
 
 fun main() {
     // The tables to create in the database.
@@ -99,11 +89,11 @@ fun main() {
     // RabbitMQ set consumer
     val deliverCallback = DeliverCallback { consumerTag: String?, delivery: Delivery ->
         val id = String(delivery.body, StandardCharsets.UTF_8).toInt()
-        kotlinLogger.info { "[$consumerTag] Received invoice $id" }
+        logger.info { "[$consumerTag] Received invoice $id" }
         billingConsumerLambda.handler(id)
     }
     val cancelCallback = CancelCallback { consumerTag: String? ->
-        kotlinLogger.info { "[$consumerTag] cancelled" }
+        logger.info { "[$consumerTag] cancelled" }
     }
 
     channel.basicConsume(QUEUE_NAME, true, CONSUMER_TAG, deliverCallback, cancelCallback)
@@ -114,18 +104,4 @@ fun main() {
         customerService = customerService,
         billingProducerLambda = billingProducerLambda
     ).run()
-
-    // kjob
-    val kjob = kjob(InMem) {
-        extension(KronModule)
-    }.start()
-
-    // TODO: cron job should be scheduled
-    kjob(Kron).kron(FirstOfMonth) {
-        maxRetries = 3
-        execute {
-            kotlinLogger.info { "Scheduled task, charge pending invoices" }
-            billingProducerLambda.handler()
-        }
-    }
 }

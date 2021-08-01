@@ -2,6 +2,9 @@ version: '3.8'
 services:
   pleo-antaeus:
     build: .
+    depends_on:
+      - rabbitmq
+      - scheduler
     expose:
       - 7000
     image: pleo-antaeus
@@ -17,6 +20,12 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
+
+  scheduler:
+    image: lecovi/curl-cron
+    environment:
+      URL: pleo-antaeus:7000/rest/v1/billing
+      CRON_SCHEDULE: "0 3 1 * *"
 
 volumes:
   pleo-antaeus-build-cache:
