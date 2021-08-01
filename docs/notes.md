@@ -88,3 +88,5 @@ Future steps:
 - https://www.petrikainulainen.net/programming/testing/running-kotlin-tests-with-gradle/
 - https://stackoverflow.com/questions/36262305/difference-between-list-and-array-types-in-kotlin
 - for CI: https://github.com/marketplace/actions/gradle-command
+- https://x-team.com/blog/set-up-rabbitmq-with-docker-compose/
+- https://medium.com/swlh/async-messaging-with-kotlin-and-rabbitmq-d69df1937b25

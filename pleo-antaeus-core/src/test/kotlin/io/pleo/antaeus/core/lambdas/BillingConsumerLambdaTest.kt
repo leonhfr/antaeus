@@ -55,13 +55,6 @@ class BillingConsumerLambdaTest {
     }
 
     @Test
-    fun `handler should throw on select errors`() {
-        assertThrows<Exception> {
-            billingConsumerLambda.handler(1)
-        }
-    }
-
-    @Test
     fun `chargeInvoice should handle an unknown exception`() {
         val result = billingConsumerLambda.chargeInvoice(getInvoice(0))
         Assertions.assertEquals(result.status, InvoiceStatus.FAILED_UNKNOWN)
