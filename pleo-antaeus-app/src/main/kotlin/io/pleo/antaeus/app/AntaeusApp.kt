@@ -8,13 +8,13 @@
 package io.pleo.antaeus.app
 
 import getPaymentProvider
-import io.pleo.antaeus.core.services.BillingService
+import io.pleo.antaeus.core.lambdas.BillingConsumerLambda
+import io.pleo.antaeus.core.lambdas.BillingProducerLambda
 import io.pleo.antaeus.core.services.CustomerService
 import io.pleo.antaeus.core.services.InvoiceService
 import io.pleo.antaeus.data.AntaeusDal
 import io.pleo.antaeus.data.CustomerTable
 import io.pleo.antaeus.data.InvoiceTable
-import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.rest.AntaeusRest
 import it.justwrote.kjob.KronJob
 import it.justwrote.kjob.kjob
@@ -82,13 +82,18 @@ fun main() {
     val invoiceService = InvoiceService(dal = dal)
     val customerService = CustomerService(dal = dal)
 
-    // This is _your_ billing service to be included where you see fit
-    val billingService = BillingService(paymentProvider = paymentProvider, invoiceService = invoiceService)
+    // Lambdas (theoretically!)
+    val billingConsumerLambda = BillingConsumerLambda(
+        paymentProvider = paymentProvider,
+        invoiceService = invoiceService
+    )
+    val billingProducerLambda = BillingProducerLambda(invoiceService = invoiceService)
 
     // Create REST web service
     AntaeusRest(
         invoiceService = invoiceService,
-        customerService = customerService
+        customerService = customerService,
+        billingProducerLambda = billingProducerLambda
     ).run()
 
     // kjob
@@ -101,15 +106,18 @@ fun main() {
     kjob.register(ProcessInvoiceJob) {
         executionType = JobExecutionType.NON_BLOCKING
         execute {
-            billingService.processInvoice(props[it.id])
+            billingConsumerLambda.handler(props[it.id])
         }
     }
 
+    // TODO: cron job should be scheduled
     kjob(Kron).kron(FirstOfMonth) {
         maxRetries = 3
         execute {
             kotlinLogger.info { "Scheduled task, charge pending invoices" }
-            invoiceService.fetchAll(InvoiceStatus.PENDING).forEach {
+            // TODO: handle should schedule job directly
+            val invoices = billingProducerLambda.handler()
+            invoices.forEach {
                 val id = it.id
                 kjob.schedule(ProcessInvoiceJob) {
                     props[it.id] = id

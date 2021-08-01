@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  pleo-antaeus:
+    build: .
+    expose:
+      - 7000
+    image: pleo-antaeus
+    ports:
+      - 7000:7000
+    stdin_open: true
+    tty: true
+    volumes:
+      - pleo-antaeus-build-cache:/root/.gradle
+
+volumes:
+  pleo-antaeus-build-cache:
