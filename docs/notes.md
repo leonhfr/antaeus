@@ -88,3 +88,4 @@ Future steps:
 - https://www.petrikainulainen.net/programming/testing/running-kotlin-tests-with-gradle/
 - https://stackoverflow.com/questions/36262305/difference-between-list-and-array-types-in-kotlin
 - for CI: https://github.com/marketplace/actions/gradle-command
+- https://www.baeldung.com/ops/kafka-docker-setup
