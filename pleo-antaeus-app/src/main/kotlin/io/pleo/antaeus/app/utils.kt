@@ -1,3 +1,5 @@
+import com.rabbitmq.client.Channel
+import com.rabbitmq.client.ConnectionFactory
 import io.pleo.antaeus.core.exceptions.CurrencyMismatchException
 import io.pleo.antaeus.core.exceptions.CustomerNotFoundException
 import io.pleo.antaeus.core.exceptions.NetworkException
@@ -44,4 +46,15 @@ internal fun getPaymentProvider(): PaymentProvider {
             }
         }
     }
+}
+
+// RabbitMQ
+const val QUEUE_NAME = "billing-jobs"
+
+fun buildChannel(): Channel {
+    val factory = ConnectionFactory()
+    factory.host = "rabbitmq"
+    val channel = factory.newConnection().createChannel()
+    channel.queueDeclare(QUEUE_NAME,false,false,false,null)
+    return channel
 }

@@ -9,6 +9,8 @@ import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import mu.KotlinLogging
 
+const val CONSUMER_TAG = "billing-consumer"
+
 class BillingConsumerLambda(
     private val paymentProvider: PaymentProvider,
     private val invoiceService: InvoiceService
@@ -16,15 +18,9 @@ class BillingConsumerLambda(
     private val logger = KotlinLogging.logger {}
 
     fun handler(id: Int): Invoice {
+//        TODO: Exponential backoff on FAILED_NETWORK and FAILED_UNKNOWN statuses
         val invoice = invoiceService.fetch(id)
-        val result = this.chargeInvoice(invoice).also { invoiceService.update(invoice.id, it.status) }
-        return when (result.status) {
-            // Throwing to retry job
-            InvoiceStatus.FAILED_NETWORK, InvoiceStatus.FAILED_UNKNOWN -> {
-                throw Exception("Failing to retry invoice $id")
-            }
-            else -> result
-        }
+        return chargeInvoice(invoice).also { invoiceService.update(invoice.id, it.status) }
     }
 
     fun chargeInvoice(invoice: Invoice): Invoice {

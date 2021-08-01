@@ -29,4 +29,7 @@ dependencies {
     implementation("it.justwrote:kjob-core:0.2.0")
     implementation("it.justwrote:kjob-kron:0.2.0")
     implementation("it.justwrote:kjob-inmem:0.2.0" )
+
+    // RabbitMQ
+    implementation("com.rabbitmq:amqp-client:5.9.0")
 }
