@@ -41,17 +41,19 @@ class BillingConsumerLambdaTest {
         every { fetch(5) } returns getInvoice(5)
         every { update(1, InvoiceStatus.FAILED_NETWORK) } returns getInvoice(1, InvoiceStatus.FAILED_NETWORK)
         every { update(5, InvoiceStatus.PAID) } returns getInvoice(5)
+        every { update(5, InvoiceStatus.PENDING) } returns getInvoice(5, status = InvoiceStatus.PAID)
     }
 
     private val billingConsumerLambda = BillingConsumerLambda(
         paymentProvider = paymentProvider,
-        invoiceService = invoiceService)
+        invoiceService = invoiceService
+    )
 
     @Test
     fun `handler should update the invoice`() {
         billingConsumerLambda.handler(5)
         verify(exactly = 1) { paymentProvider.charge(getInvoice(5)) }
-        verify(exactly = 1) { invoiceService.update(5, InvoiceStatus.PAID) }
+        verify(exactly = 1) { invoiceService.update(5, InvoiceStatus.PENDING) }
     }
 
     @Test

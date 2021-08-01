@@ -8,6 +8,7 @@ import io.pleo.antaeus.core.services.InvoiceService
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import mu.KotlinLogging
+import kotlin.math.pow
 
 const val CONSUMER_TAG = "billing-consumer"
 
@@ -18,9 +19,23 @@ class BillingConsumerLambda(
     private val logger = KotlinLogging.logger {}
 
     fun handler(id: Int): Invoice {
-//        TODO: Exponential backoff on FAILED_NETWORK and FAILED_UNKNOWN statuses
         val invoice = invoiceService.fetch(id)
-        return chargeInvoice(invoice).also { invoiceService.update(invoice.id, it.status) }
+        return exponentialBackoff(invoice, 1).also { invoiceService.update(invoice.id, it.status) }
+    }
+
+    fun exponentialBackoff(invoice: Invoice, tries: Int): Invoice {
+        if (tries >= 3) {
+            return invoice
+        }
+        val result = chargeInvoice(invoice)
+        return when (result.status) {
+            InvoiceStatus.FAILED_NETWORK, InvoiceStatus.FAILED_UNKNOWN -> {
+                logger.info { "waiting for try $tries" }
+                Thread.sleep((2.0).pow(tries).toLong())
+                exponentialBackoff(invoice, tries + 1)
+            }
+            else -> invoice
+        }
     }
 
     fun chargeInvoice(invoice: Invoice): Invoice {
