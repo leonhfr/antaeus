@@ -127,7 +127,18 @@ Here is a brief description of its components:
   if there are too many entries. The invoices are then converted to job and posted to a SQS Message Queue.
 - The Message Queue is a SQS. It's reliable, fully managed, cheap, and easy to use.
 - The Billing Consumer is a lambda that consumes the Message Queue. It attempts to charge the invoice, and updates the
-  Invoice status accordingly through the API.
+  Invoice status accordingly through the API. It uses an exponential backoff algorithm in case of network or unknown
+  errors, which are safe to retry.
+
+To approach it as closely as possible, I set up several docker containers with `docker-compose`:
+
+- `pleo-antaeus` contains the pleo app along with the lambdas
+- `rabbitmq` simulates SQS
+- `scheduler` uses [lecovi/curl-cron](https://hub.docker.com/r/lecovi/curl-cron) and simulates a CloudWatch Event, it
+  calls the API endpoint to trigger the billing process on a cron job
+
+Notes: instead of RabbitMQ, I [tried to use Kafka](https://github.com/leonhfr/antaeus/pull/3) but couldn't make it work
+due to a connection error. Looking back, it's probably the docker setup that was wrong.
 
 ## How-to
 
@@ -143,9 +154,15 @@ $ gradle clean test
 $ ./docker-clean.sh && ./docker-start.sh
 ```
 
+The cron job runs every first of the month at 3 am. To trigger the billing process manually:
+
+```shell
+$ curl --location --request GET 'http://localhost:7000/rest/v1/billing'
+```
+
 ## Timing
 
-I think that overall, I will have spent between 12 and 15 hours on the project.
+I think that overall, I will have spent around 15 hours on the project.
 
 ## Learnings
 
